@@ -29,6 +29,10 @@ public class ApiException extends RuntimeException {
         return new ApiException("Not found.", 404);
     }
 
+    public static ApiException a401() {
+        return new ApiException("Unauthorized.", 401);
+    }
+
     public int getCode() {
         return code;
     }

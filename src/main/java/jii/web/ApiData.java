@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -45,8 +46,8 @@ public class ApiData {
         this.pagination = pagination;
     }
 
-    public void setTraceback(Object traceback) {
-        this.traceback = traceback;
+    public void setTraceback(Exception e) {
+        this.traceback = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString);
     }
 
     // ins
@@ -68,6 +69,12 @@ public class ApiData {
 
     public static ApiData success(Object data) {
         ApiData ret = new ApiData("success");
+        ret.setData(data);
+        return ret;
+    }
+
+    public static ApiData success(Object data, String message) {
+        ApiData ret = new ApiData(message == null ? "success" : message);
         ret.setData(data);
         return ret;
     }
