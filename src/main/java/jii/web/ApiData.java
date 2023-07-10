@@ -1,13 +1,15 @@
 package jii.web;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.ToString;
-import org.springframework.data.domain.Page;
-
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.springframework.data.domain.Page;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * @author admin
@@ -18,7 +20,7 @@ public class ApiData {
     @Getter
     private int status = 200;
     @Getter
-    private final int code = 0;
+    private int code = 0;
     @Getter
     private String message;
     @Getter
@@ -34,6 +36,10 @@ public class ApiData {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 
     public void setData(Object data) {
@@ -94,7 +100,7 @@ public class ApiData {
         p.put("page", res.getPageable().getPageNumber() + 1);
         p.put("pageCount", res.getTotalPages());
         p.put("pageSize", res.getSize());
-        p.put("total", (int) res.getTotalElements());
+        p.put("total", (int)res.getTotalElements());
         ret.setPagination(p);
 
         return ret;
