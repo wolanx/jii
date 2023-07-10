@@ -2,6 +2,7 @@ package jii.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.data.domain.Page;
 
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.Map;
 /**
  * @author admin
  */
+@ToString
 public class ApiData {
 
     @Getter
@@ -51,6 +53,7 @@ public class ApiData {
     }
 
     // ins
+    public ApiData() {}
 
     public ApiData(String message) {
         this.setMessage(message);
