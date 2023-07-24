@@ -25,6 +25,10 @@ public class TimeUtil {
         return (int)(dt.toInstant(ZoneOffset.UTC).toEpochMilli() / 1000);
     }
 
+    public static String date2str(Date a, String fmt) {
+        return new SimpleDateFormat(fmt).format(a);
+    }
+
     public static String date2Ymd(Date a) {
         return YMD.format(a);
     }
