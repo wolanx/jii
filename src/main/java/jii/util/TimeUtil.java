@@ -2,6 +2,7 @@ package jii.util;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -35,6 +36,14 @@ public class TimeUtil {
 
     public static String date2YmdHis(Date a) {
         return YMD_HIS.format(a);
+    }
+
+    public static String date2strT8(Date a) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+
+//        OffsetDateTime offsetDateTime = OffsetDateTime.of(dateTime, ZoneOffset.ofHours(8));
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+        return sdf.format(a);
     }
 
 }
