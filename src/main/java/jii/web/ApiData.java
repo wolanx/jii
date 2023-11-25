@@ -55,7 +55,7 @@ public class ApiData {
     }
 
     public void setTraceback(Exception e) {
-        this.traceback = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString);
+        this.traceback = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).limit(20);
     }
 
     // ins

@@ -1,19 +1,19 @@
 package jii.web;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import lombok.Getter;
 
 import java.io.Serial;
 
 /**
  * @author admin
  */
-@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+@Getter
 public class ApiException extends RuntimeException {
 
     @Serial
     private static final long serialVersionUID = -4100309035717531908L;
 
+    private int status = 400;
     private int code = 1;
 
     public ApiException(String message) {
@@ -31,14 +31,6 @@ public class ApiException extends RuntimeException {
 
     public static ApiException a401() {
         return new ApiException("Unauthorized.", 401);
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
     }
 
 }
