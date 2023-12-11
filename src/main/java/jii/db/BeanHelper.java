@@ -1,18 +1,17 @@
 package jii.db;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
-import org.apache.commons.beanutils.BeanUtilsBean;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.*;
+import org.springframework.core.ResolvableType;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 @Slf4j
 public class BeanHelper {
@@ -21,15 +20,72 @@ public class BeanHelper {
         BeanUtils.copyProperties(source, target, getNullPropertyNames(source));
     }
 
-    public static void copyFromMap(Map<String, Object> source, Object target) {
-        BeanUtilsBean.getInstance().getConvertUtils().register(false, true, 0);
+    /*public static void copyFromMap(Map<String, Object> source, Object target) {
+        BeanUtilsBean ins = BeanUtilsBean.getInstance();
+        Converter converter = new DateConverter(null);
+        ins.getConvertUtils().register(false, true, 0);
+        ins.getConvertUtils().register(converter, Date.class);
         try {
             Map<String, Object> source2 = convertSnakeToCamel(source);
             org.apache.commons.beanutils.BeanUtils.copyProperties(target, source2);
+            System.out.println("target = " + target);
         } catch (IllegalAccessException | InvocationTargetException e) {
             log.error(e.getMessage(), e);
         }
-        BeanUtilsBean.getInstance().getConvertUtils().deregister();
+        ins.getConvertUtils().deregister();
+    }*/
+
+    public static void copyFromMap(Map<String, Object> source, Object target) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        Map<String, Object> camel = convertSnakeToCamel(source);
+        Object source2 = objectMapper.convertValue(camel, target.getClass());
+
+        List<String> updatedKey = camel.keySet().stream().toList();
+        copyProperties(source2, target, updatedKey);
+    }
+
+    /**
+     * org.springframework.beans.BeanUtils.copyProperties 魔改
+     */
+    private static void copyProperties(Object source, Object target, List<String> allowList) throws BeansException {
+        Assert.notNull(source, "Source must not be null");
+        Assert.notNull(target, "Target must not be null");
+
+        Class<?> actualEditable = target.getClass();
+        PropertyDescriptor[] targetPds = BeanUtils.getPropertyDescriptors(actualEditable);
+
+        for (PropertyDescriptor targetPd : targetPds) {
+            Method writeMethod = targetPd.getWriteMethod();
+            if (writeMethod != null && allowList.contains(targetPd.getName())) {
+                PropertyDescriptor sourcePd = BeanUtils.getPropertyDescriptor(source.getClass(), targetPd.getName());
+                if (sourcePd != null) {
+                    Method readMethod = sourcePd.getReadMethod();
+                    if (readMethod != null) {
+                        ResolvableType sourceResolvableType = ResolvableType.forMethodReturnType(readMethod);
+                        ResolvableType targetResolvableType = ResolvableType.forMethodParameter(writeMethod, 0);
+
+                        // Ignore generic types in assignable check if either ResolvableType has unresolvable generics.
+                        boolean isAssignable = (sourceResolvableType.hasUnresolvableGenerics() || targetResolvableType.hasUnresolvableGenerics() ? ClassUtils.isAssignable(writeMethod.getParameterTypes()[0], readMethod.getReturnType()) : targetResolvableType.isAssignableFrom(sourceResolvableType));
+
+                        if (isAssignable) {
+                            try {
+                                if (!Modifier.isPublic(readMethod.getDeclaringClass().getModifiers())) {
+                                    readMethod.setAccessible(true);
+                                }
+                                Object value = readMethod.invoke(source);
+                                if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers())) {
+                                    writeMethod.setAccessible(true);
+                                }
+                                writeMethod.invoke(target, value);
+                            } catch (Throwable ex) {
+                                throw new FatalBeanException("Could not copy property '" + targetPd.getName() + "' from source to target", ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public static String[] getNullPropertyNames(Object source) {
