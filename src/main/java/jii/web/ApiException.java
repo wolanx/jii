@@ -20,9 +20,9 @@ public class ApiException extends RuntimeException {
         super(message);
     }
 
-    public ApiException(String message, int code) {
+    public ApiException(String message, int status) {
         super(message);
-        this.code = code;
+        this.status = status;
     }
 
     public static ApiException a404() {
